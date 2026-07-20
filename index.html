@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Calibrate | Eval Harness for Prompts</title>
-<meta name="description" content="Grade LLM prompt outputs against a rubric you define. A rubric-based eval harness built by Asawira.">
+<title>Calibrate. An eval tool for prompts.</title>
+<meta name="description" content="A guided tool that grades AI prompt outputs against a rubric you build. No code needed.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
@@ -16,150 +16,108 @@
 
 <div class="shell">
 
-  <!-- Rail: stage tracker -->
-  <nav class="rail" aria-label="Workflow stages">
+  <nav class="rail" aria-label="Steps">
     <div class="rail-brand">
       <span class="rail-dot"></span>
       <span>Calibrate</span>
     </div>
     <ol class="rail-steps" id="railSteps">
-      <li class="rail-step is-active" data-target="stage-prompt">
-        <span class="rail-step-mark">01</span>
-        <span class="rail-step-label">Prompt</span>
-      </li>
-      <li class="rail-step" data-target="stage-rubric">
-        <span class="rail-step-mark">02</span>
-        <span class="rail-step-label">Rubric</span>
-      </li>
-      <li class="rail-step" data-target="stage-cases">
-        <span class="rail-step-mark">03</span>
-        <span class="rail-step-label">Cases</span>
-      </li>
-      <li class="rail-step" data-target="stage-report">
-        <span class="rail-step-mark">04</span>
-        <span class="rail-step-label">Report</span>
-      </li>
+      <li class="rail-step" data-step="1"><span class="rail-step-mark">01</span><span class="rail-step-label">Task</span></li>
+      <li class="rail-step" data-step="2"><span class="rail-step-mark">02</span><span class="rail-step-label">Rubric</span></li>
+      <li class="rail-step" data-step="3"><span class="rail-step-mark">03</span><span class="rail-step-label">Example</span></li>
+      <li class="rail-step" data-step="4"><span class="rail-step-mark">04</span><span class="rail-step-label">Report</span></li>
     </ol>
     <div class="rail-foot">
-      <span class="rail-foot-label">Session key</span>
-      <span class="rail-foot-hint">browser-only, never stored</span>
+      <span class="rail-foot-label">Your API key</span>
+      <span class="rail-foot-hint">stays in this tab, never stored</span>
     </div>
   </nav>
 
   <main class="stage">
 
-    <!-- Hero: the gauge is the thesis -->
-    <header class="hero">
-      <div class="hero-copy">
-        <p class="eyebrow">Eval harness</p>
-        <h1>Every prompt makes a claim.<br>This checks it.</h1>
-        <p class="hero-sub">Set a rubric, run real test cases against a live model, and get a scored reading back.</p>
-        <div class="key-field">
-          <label for="apiKey">Anthropic API key</label>
-          <div class="key-input-row">
-            <input id="apiKey" type="password" placeholder="sk-ant-…" autocomplete="off">
-            <button class="btn btn-ghost-outline" id="toggleKey" type="button" aria-label="Show key">Show</button>
-          </div>
-          <p class="key-hint">Stays in this tab only. Never written to disk, never sent anywhere but Anthropic.</p>
-        </div>
+    <header class="topbar">
+      <div>
+        <p class="eyebrow">Eval tool for prompts</p>
+        <h1>Grade what your prompt actually produces</h1>
       </div>
-      <div class="hero-gauge" aria-hidden="true">
-        <svg viewBox="0 0 240 160" class="gauge-svg" id="heroGauge">
-          <path class="gauge-track" d="M 20 140 A 100 100 0 0 1 220 140" />
-          <path class="gauge-fill" id="gaugeFill" d="M 20 140 A 100 100 0 0 1 220 140" />
-          <g id="gaugeTicks"></g>
-          <line class="gauge-needle" id="gaugeNeedle" x1="120" y1="140" x2="120" y2="55" />
-          <circle class="gauge-hub" cx="120" cy="140" r="7" />
-        </svg>
-        <div class="gauge-readout">
-          <span class="gauge-readout-num" id="gaugeNum">—</span>
-          <span class="gauge-readout-label">avg / 5</span>
+      <div class="key-field">
+        <label for="apiKey">Anthropic API key</label>
+        <div class="key-input-row">
+          <input id="apiKey" type="password" placeholder="sk-ant-..." autocomplete="off">
+          <button class="btn btn-ghost-outline" id="toggleKey" type="button">Show</button>
         </div>
       </div>
     </header>
 
-    <!-- Stage 1: Prompt -->
-    <section class="panel" id="stage-prompt">
-      <div class="panel-head">
-        <span class="panel-mark">01</span>
-        <div>
-          <h2>Prompt under test</h2>
-          <p>Write the prompt you'd actually ship. Use <code>{{input}}</code> where each test case gets inserted.</p>
-        </div>
-      </div>
-      <div class="panel-body">
-        <div class="presets" id="presetRow">
-          <span class="presets-label">Start from</span>
-          <button class="chip" data-preset="summary">PM update summary</button>
-          <button class="chip" data-preset="extract">Action item extraction</button>
-          <button class="chip" data-preset="support">Support reply tone</button>
-        </div>
-        <textarea id="promptTemplate" rows="5" spellcheck="false"></textarea>
-      </div>
-    </section>
-
-    <!-- Stage 2: Rubric -->
-    <section class="panel" id="stage-rubric">
-      <div class="panel-head">
-        <span class="panel-mark">02</span>
-        <div>
-          <h2>Rubric</h2>
-          <p>Name what "good" means here. Each criterion gets scored 1–5 by the model acting as judge.</p>
-        </div>
-        <button class="btn btn-outline panel-head-action" id="addCriterion" type="button">+ Criterion</button>
-      </div>
-      <div class="panel-body">
-        <div id="criteriaList" class="criteria-list"></div>
-      </div>
-    </section>
-
-    <!-- Stage 3: Cases -->
-    <section class="panel" id="stage-cases">
-      <div class="panel-head">
-        <span class="panel-mark">03</span>
-        <div>
-          <h2>Test cases</h2>
-          <p>Real inputs the prompt will see. Reference notes are optional but sharpen the grading.</p>
-        </div>
-        <button class="btn btn-outline panel-head-action" id="addCase" type="button">+ Case</button>
-      </div>
-      <div class="panel-body">
-        <div id="casesList" class="cases-list"></div>
-      </div>
-    </section>
-
-    <!-- Run control -->
-    <div class="run-bar">
-      <button class="btn btn-primary btn-run" id="runBtn" type="button">
-        <span id="runBtnLabel">Run eval</span>
-      </button>
-      <div class="run-status" id="runStatus" aria-live="polite"></div>
+    <div class="progress-track">
+      <div class="progress-fill" id="progressFill"></div>
     </div>
 
-    <!-- Stage 4: Report -->
-    <section class="panel" id="stage-report">
-      <div class="panel-head">
-        <span class="panel-mark">04</span>
-        <div>
-          <h2>Report</h2>
-          <p>Per-case scores with the judge's reasoning, so you can see exactly where the prompt held up or broke.</p>
-        </div>
-        <div class="panel-head-actions">
-          <button class="btn btn-outline" id="copyReport" type="button" disabled>Copy report</button>
-          <button class="btn btn-outline" id="downloadReport" type="button" disabled>Download JSON</button>
-        </div>
+    <!-- STEP 1 -->
+    <section class="step" id="step1">
+      <p class="step-tag">Step 1 of 3</p>
+      <h2>What do you want the AI to do?</h2>
+      <p class="step-sub">Pick the closest match. You can adjust everything after.</p>
+      <div class="task-grid" id="taskGrid"></div>
+    </section>
+
+    <!-- STEP 2 -->
+    <section class="step" id="step2" style="display:none;">
+      <p class="step-tag">Step 2 of 3</p>
+      <h2>What does "good" look like?</h2>
+      <p class="step-sub">Confirm what the AI should do, then build your checklist from the library below.</p>
+
+      <label class="field-label">What the AI will do</label>
+      <div id="instructionArea"></div>
+
+      <label class="field-label" style="margin-top:20px;">Your checklist</label>
+      <p class="empty-hint" id="criteriaEmptyHint">Nothing added yet. Browse the library below or write your own.</p>
+      <div id="criteriaList" class="criteria-list"></div>
+
+      <button class="btn" id="openLibraryBtn">+ Browse rubric library</button>
+      <div id="libraryPanel" style="display:none;"></div>
+
+      <div class="step-actions">
+        <button class="btn" id="back1">Back</button>
+        <button class="btn btn-primary" id="next2">Continue</button>
       </div>
-      <div class="panel-body">
-        <div class="empty-state" id="emptyState">
-          <div class="empty-mark">＋</div>
-          <p>No runs yet. Fill in a prompt, rubric, and at least one test case, then hit <strong>Run eval</strong> above.</p>
-        </div>
-        <div id="resultsList" class="results-list"></div>
+    </section>
+
+    <!-- STEP 3 -->
+    <section class="step" id="step3" style="display:none;">
+      <p class="step-tag">Step 3 of 3</p>
+      <h2>Paste a real example</h2>
+      <p class="step-sub">This is the actual text the AI will work on. Use something real, that is what makes the result meaningful.</p>
+
+      <div id="fileBadge"></div>
+      <textarea id="inputText" rows="6"></textarea>
+      <div class="step3-links">
+        <button class="btn-text" id="useExampleBtn">Use the example text instead</button>
+        <label class="btn-text file-label">
+          Attach a file (.txt, .md, .csv)
+          <input type="file" id="fileInput" accept=".txt,.md,.csv" style="display:none;">
+        </label>
       </div>
+      <div id="fileError" class="error-text"></div>
+      <div id="step3Error" class="error-text"></div>
+
+      <div class="step-actions">
+        <button class="btn" id="back2">Back</button>
+        <button class="btn btn-primary" id="runBtn">Run it</button>
+      </div>
+    </section>
+
+    <!-- STEP 4 -->
+    <section class="step" id="step4" style="display:none;">
+      <div id="runningState" class="running-state" style="display:none;">
+        <div class="spinner"></div>
+        <p id="runLabel">Working...</p>
+      </div>
+      <div id="reportState" style="display:none;"></div>
     </section>
 
     <footer class="page-foot">
-      <span>Built by Asawira · single static build, no backend</span>
+      <span>Built by Asawira. Single static build, no backend.</span>
       <a href="https://github.com/AsawiraEmaanKhan/eval-harness" target="_blank" rel="noopener">Source on GitHub</a>
     </footer>
 
