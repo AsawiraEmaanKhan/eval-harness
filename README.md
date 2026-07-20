@@ -4,7 +4,7 @@ A small tool for a real question. Does this prompt actually do what I think it d
 
 ## Why this exists
 
-"How do you evaluate AI features?" comes up in most AI PM interviews. This is a working answer instead of a talking point. You describe what you want the AI to do, build a checklist for what good looks like, run a real example through it, and get back a scored, plain language report instead of a guess.
+"How do you evaluate AI features?" comes up in most AI PM interviews. This is a working answer instead of a talking point. It describes what I want the AI to do, build a checklist for what good looks like, run a real example through it, and get back a scored, plain language report instead of a guess.
 
 ## How it is different from the big tools
 
