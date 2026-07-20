@@ -51,5 +51,3 @@ styles.css
 script.js
 README.md
 ```
-
-Deploy by pushing to GitHub and turning on Pages. Settings, then Pages, then deploy from branch, main, root folder.
